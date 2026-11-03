@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
   Blend,
   Check,
-  ChevronDown,
   Code2,
   Copy,
   Heart,
@@ -48,6 +47,25 @@ export default function Home() {
     "#06B6D4",
   ]);
   const [previewText, setPreviewText] = useState("Design without limits.");
+  const [selectedFont, setSelectedFont] = useState("Space Grotesk");
+  const [collectionPresets, setCollectionPresets] = useState(presets);
+
+  const fontOptions = [
+    { name: "Space Grotesk", family: "var(--font-space), sans-serif", style: "Modern · Display" },
+    { name: "Inter", family: "var(--font-inter), sans-serif", style: "Clean · UI" },
+    { name: "Arial", family: "Arial, Helvetica, sans-serif", style: "Classic · Sans serif" },
+    { name: "Verdana", family: "Verdana, Geneva, sans-serif", style: "Wide · Readable" },
+    { name: "Trebuchet MS", family: "'Trebuchet MS', sans-serif", style: "Friendly · Rounded" },
+    { name: "Georgia", family: "Georgia, serif", style: "Elegant · Serif" },
+    { name: "Times New Roman", family: "'Times New Roman', serif", style: "Traditional · Serif" },
+    { name: "Courier New", family: "'Courier New', monospace", style: "Technical · Monospace" },
+    { name: "Impact", family: "Impact, Haettenschweiler, sans-serif", style: "Bold · Poster" },
+    { name: "System UI", family: "system-ui, sans-serif", style: "Native · System" },
+  ];
+
+  const selectedFontFamily =
+    fontOptions.find((font) => font.name === selectedFont)?.family ??
+    "var(--font-space), sans-serif";
 
   const gradient = `linear-gradient(${angle}deg, ${colors.join(", ")})`;
   const css = `background: ${gradient};`;
@@ -83,6 +101,17 @@ export default function Home() {
       "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0");
     setColors([randomHex(), randomHex()]);
     setAngle(Math.floor(Math.random() * 360));
+  }
+
+  function randomizeCollection() {
+    setCollectionPresets((current) => {
+      const shuffled = [...current];
+      for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    });
   }
 
   function usePreset(preset: (typeof presets)[number]) {
@@ -540,6 +569,12 @@ export default function Home() {
                           )}
                           {copied === "css" ? "Copied!" : "Copy CSS"}
                         </button>
+                        <button
+                          onClick={() => setActiveTab("CSS Exporter")}
+                          className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-300 transition hover:border-violet-400/40 hover:bg-violet-500/10 hover:text-violet-200"
+                        >
+                          <Code2 size={14} /> Get CSS Code
+                        </button>
                       </div>
                       <pre className="custom-scrollbar overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs leading-6 text-emerald-300 sm:text-sm">
                         <span className="text-violet-300">background</span>
@@ -562,14 +597,14 @@ export default function Home() {
                       </h2>
                     </div>
                     <button
-                      onClick={randomize}
+                      onClick={randomizeCollection}
                       className="flex items-center gap-2 text-xs text-zinc-500 hover:text-violet-300"
                     >
-                      <RotateCcw size={14} /> Randomize
+                      <RotateCcw size={14} /> Randomize collection
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {presets.slice(0, 4).map((preset) => (
+                    {collectionPresets.slice(0, 4).map((preset) => (
                       <button
                         key={preset.name}
                         onClick={() => usePreset(preset)}
@@ -667,25 +702,78 @@ export default function Home() {
                   value={previewText}
                   onChange={(e) => setPreviewText(e.target.value)}
                   maxLength={100}
-                  className="mb-7 w-full rounded-xl border border-white/10 bg-[#09090f] px-4 py-3 text-sm outline-none focus:border-violet-400/50"
+                  className="mb-6 w-full rounded-xl border border-white/10 bg-[#09090f] px-4 py-3 text-sm outline-none focus:border-violet-400/50"
                 />
+
+                <div className="mb-6">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <label htmlFor="font-choice" className="text-xs font-medium text-zinc-400">Choose a font</label>
+                    <span className="text-xs text-violet-300">{selectedFont}</span>
+                  </div>
+                  <select
+                    id="font-choice"
+                    value={selectedFont}
+                    onChange={(e) => setSelectedFont(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-[#09090f] px-4 py-3 text-sm text-zinc-200 outline-none focus:border-violet-400/50"
+                  >
+                    {fontOptions.map((font) => (
+                      <option key={font.name} value={font.name}>{font.name} — {font.style}</option>
+                    ))}
+                  </select>
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                    {fontOptions.map((font) => (
+                      <button
+                        key={font.name}
+                        onClick={() => setSelectedFont(font.name)}
+                        className={`rounded-xl border p-3 text-left transition ${
+                          selectedFont === font.name
+                            ? "border-violet-400/40 bg-violet-500/10"
+                            : "border-white/[0.08] bg-white/[0.02] hover:border-white/20"
+                        }`}
+                      >
+                        <span className="block truncate text-sm text-zinc-200" style={{ fontFamily: font.family }}>Ag</span>
+                        <span className="mt-1 block truncate text-[10px] text-zinc-500">{font.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="rounded-2xl border border-white/10 bg-[#09090f] p-6 sm:p-10">
-                  <div className="mb-5 text-xs text-violet-300">SPACE GROTESK / DISPLAY</div>
-                  <h3 className="gradient-text font-[family-name:var(--font-space)] text-4xl font-bold tracking-tight sm:text-6xl">
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <span className="text-xs text-violet-300">{selectedFont.toUpperCase()} / LIVE PREVIEW</span>
+                    <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] text-zinc-500">Aa Bb Cc 123</span>
+                  </div>
+                  <h3
+                    className="gradient-text text-4xl font-bold tracking-tight sm:text-6xl"
+                    style={{ fontFamily: selectedFontFamily }}
+                  >
                     {previewText || "Your next big idea."}
                   </h3>
-                  <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-400">
-                    Great typography gives your ideas a voice. Try different
-                    wording, then copy your text for use in your next project.
+                  <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-400" style={{ fontFamily: selectedFontFamily }}>
+                    Great typography gives your ideas a voice. Try different fonts and wording, then copy your text for your next project.
                   </p>
+                  <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/[0.08] pt-4 text-xs text-zinc-500">
+                    <span>Font: <span className="text-zinc-300">{selectedFont}</span></span>
+                    <span>Weight: <span className="text-zinc-300">Bold</span></span>
+                    <span>Preview: <span className="text-zinc-300">Responsive</span></span>
+                  </div>
                 </div>
-                <button
-                  onClick={() => copyText(previewText, "typography")}
-                  className="mt-5 flex items-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 py-3 text-xs text-violet-200 hover:bg-violet-500/20"
-                >
-                  {copied === "typography" ? <Check size={15} /> : <Copy size={15} />}
-                  Copy text
-                </button>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <button
+                    onClick={() => copyText(previewText, "typography")}
+                    className="flex items-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 py-3 text-xs text-violet-200 hover:bg-violet-500/20"
+                  >
+                    {copied === "typography" ? <Check size={15} /> : <Copy size={15} />}
+                    Copy text
+                  </button>
+                  <button
+                    onClick={() => copyText(`font-family: ${selectedFontFamily};`, "font-css")}
+                    className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-xs text-zinc-300 hover:border-violet-400/30 hover:bg-white/5"
+                  >
+                    {copied === "font-css" ? <Check size={15} /> : <Code2 size={15} />}
+                    Copy font CSS
+                  </button>
+                </div>
               </div>
             )}
 
@@ -696,6 +784,18 @@ export default function Home() {
                   <p className="mt-2 text-sm text-zinc-500">
                     Copy your current gradient as reusable CSS.
                   </p>
+                </div>
+                <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-violet-400/15 bg-violet-500/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-200">Need a different gradient?</p>
+                    <p className="mt-1 text-xs leading-5 text-zinc-500">Select or customize a gradient in the Gradient Lab first. Your selection will carry over here.</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("Gradient Lab")}
+                    className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-violet-400/25 bg-violet-500/10 px-4 py-3 text-xs font-medium text-violet-200 transition hover:bg-violet-500/20"
+                  >
+                    <Blend size={15} /> Open Gradient Lab
+                  </button>
                 </div>
                 <div
                   className="mb-6 h-44 rounded-2xl"
@@ -723,7 +823,7 @@ export default function Home() {
                 <Blend size={15} className="text-violet-400" />
                 <span>PixelLab Creative Studio</span>
               </div>
-              <span>Built for curious minds and creative people.</span>
+              <span>Built for curious minds and creative people. <span className="text-zinc-500">Crafted by Sid ✦</span></span>
             </footer>
           </div>
         </section>
